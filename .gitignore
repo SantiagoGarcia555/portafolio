@@ -5,6 +5,7 @@ node_modules/
 dist/
 .astro/
 cv/build/
+og/build/
 .env
 .env.*
 !.env.example

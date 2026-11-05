@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "cv": "node cv/generate.mjs"
+    "cv": "node cv/generate.mjs",
+    "og": "node og/generate.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",
