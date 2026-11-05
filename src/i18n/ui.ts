@@ -495,6 +495,8 @@ export const contactLinks = {
   whatsapp: 'https://wa.me/573023739559',
   linkedin: 'https://www.linkedin.com/in/santiago-garcia-londo%C3%B1o-2719a923b/',
   github: 'https://github.com/SantiagoGarcia555',
+  // Clave pública de Web3Forms (va visible en el HTML por diseño; solo permite enviarme mensajes).
+  web3formsKey: 'a47ff050-e757-4124-9498-8190b8bf8c8a',
   // Generados con `npm run cv` (cv/generate.mjs).
   cv: {
     es: '/cv/santiago-garcia-cv-es.pdf',

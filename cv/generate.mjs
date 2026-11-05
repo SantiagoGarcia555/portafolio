@@ -17,6 +17,7 @@ const contact = {
   linkedin: 'linkedin.com/in/santiago-garcia-londo%C3%B1o-2719a923b',
   linkedinLabel: 'linkedin.com/in/santiago-garcia-londoño-2719a923b',
   github: 'github.com/SantiagoGarcia555',
+  portfolio: 'santiagogarcia.garcialondonosantiago.workers.dev',
 };
 
 const cv = {
@@ -193,14 +194,14 @@ function html(lang, d) {
   .contact { margin: 0; font-size: 9.6pt; }
   .contact a { color: #111; text-decoration: none; }
   h2 { font-size: 11pt; text-transform: uppercase; letter-spacing: .6px; color: #1f3a8a;
-       border-bottom: 1.2px solid #1f3a8a; padding-bottom: 2px; margin: 9px 0 5px; }
+       border-bottom: 1.2px solid #1f3a8a; padding-bottom: 2px; margin: 8px 0 4px; }
   p { margin: 0 0 4px; }
   .line { display: flex; justify-content: space-between; gap: 12px; }
   .company { font-weight: bold; font-size: 10.8pt; }
   .roles { margin: 2px 0 4px; }
   .roles .line span:first-child { font-weight: bold; }
   ul { margin: 2px 0 0; padding-left: 15px; }
-  li { margin: 0 0 2.5px; }
+  li { margin: 0 0 2px; }
   .skills p { margin-bottom: 2px; }
   .muted { color: #333; }
   section { break-inside: auto; }
@@ -212,6 +213,7 @@ function html(lang, d) {
   <p class="role">${esc(d.title)}</p>
   <p class="contact">${esc(d.location)} · ${contact.phone} · <a href="mailto:${contact.email}">${contact.email}</a></p>
   <p class="contact"><a href="https://www.${contact.linkedin}">${esc(contact.linkedinLabel)}</a> · <a href="https://${contact.github}">${contact.github}</a></p>
+  <p class="contact">Portfolio: <a href="https://${contact.portfolio}${lang === 'es' ? '' : `/${lang}/`}">${contact.portfolio}</a></p>
 
   <section>
     <h2>${esc(d.headings.summary)}</h2>

@@ -7,7 +7,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = useT(lang).contact;
-const accessKey = import.meta.env.PUBLIC_WEB3FORMS_KEY ?? '';
+const accessKey = import.meta.env.PUBLIC_WEB3FORMS_KEY || contactLinks.web3formsKey;
 ---
 
 <section class="band end" id="contacto">
