@@ -18,6 +18,7 @@ const t = useT(lang);
         <span class="half b" aria-hidden="true">García</span>
       </h1>
     </Barcode>
+    <p class="name-stack" aria-hidden="true">Santiago<br />García</p>
     <div class="intro">
       <p class="lead">{t.hero.lead}</p>
       <div class="side">
@@ -115,6 +116,28 @@ const t = useT(lang);
   @media (max-width: 820px) {
     .intro {
       grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  /* En el celular el nombre no cabe legible en la muesca del código: barras completas y nombre debajo. */
+  .name-stack {
+    display: none;
+  }
+  @media (max-width: 640px) {
+    .hero :global(.code) {
+      --notch: 0px;
+      height: clamp(150px, 46vw, 240px);
+    }
+    .half {
+      display: none;
+    }
+    .name-stack {
+      display: block;
+      margin-top: 18px;
+      font: 900 clamp(2.8rem, 16vw, 6rem) / 0.86 var(--display);
+      font-variation-settings: 'wdth' 84;
+      color: var(--bar);
+      overflow-wrap: anywhere;
+      animation: rise 0.9s 0.5s var(--out) both;
     }
   }
 </style>
