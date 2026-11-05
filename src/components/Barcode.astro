@@ -1,0 +1,103 @@
+---
+import { ean13 } from '../lib/ean';
+
+interface Props {
+  id: string;
+  /** Sin nombre ni muesca: barras de altura completa. */
+  mini?: boolean;
+}
+
+const { id, mini = false } = Astro.props;
+const { number, bars } = ean13('770202611050');
+---
+
+<div class:list={['code', { mini }]} id={id} data-barcode aria-hidden="true">
+  {
+    bars.map((b, i) => (
+      <div
+        class:list={['bar', { guard: b.guard }]}
+        data-x={b.x}
+        style={`left:${(b.x / 95) * 100}%;width:${(b.w / 95) * 100}%;--d:${i * 11}ms`}
+      />
+    ))
+  }
+  <div class="laser"></div>
+  <slot />
+</div>
+{
+  !mini && (
+    <div class="digits" aria-hidden="true">
+      <span>{number[0]}</span>
+      <span>{number.slice(1, 7)}</span>
+      <span>{number.slice(7)}</span>
+    </div>
+  )
+}
+
+<style>
+  .code {
+    position: relative;
+    container-type: inline-size;
+    height: clamp(250px, 40vw, 560px);
+    touch-action: pan-y;
+    user-select: none;
+    cursor: crosshair;
+    --notch: 11.6cqw;
+  }
+  .code.mini {
+    height: clamp(150px, 19vw, 240px);
+    --notch: 0px;
+  }
+  .bar {
+    position: absolute;
+    top: 0;
+    bottom: var(--notch);
+    background: var(--bar);
+    transform-origin: 50% 100%;
+    transition: transform 0.35s var(--out), background-color 0.4s ease;
+    animation: print 0.62s var(--out) var(--d) both;
+  }
+  .bar.guard {
+    bottom: 0;
+  }
+  .bar:global(.hit) {
+    transform: scaleY(0.8);
+  }
+  .bar:global(.near) {
+    transform: scaleY(0.92);
+  }
+  @keyframes print {
+    from {
+      transform: scaleY(0.05);
+      opacity: 0.2;
+    }
+  }
+  .laser {
+    position: absolute;
+    top: -8px;
+    bottom: -8px;
+    left: 0;
+    width: 2px;
+    background: var(--laser);
+    box-shadow: 0 0 10px 1px rgba(228, 0, 43, 0.65);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 160ms ease;
+  }
+  .laser:global(.on) {
+    opacity: 1;
+  }
+  .digits {
+    display: flex;
+    font: 400 clamp(0.62rem, 1vw, 0.85rem) / 1 var(--code);
+    padding-top: 10px;
+    letter-spacing: 0.14em;
+  }
+  .digits span:nth-child(1) {
+    width: 3.2%;
+  }
+  .digits span:nth-child(2) {
+    width: 49.8%;
+    padding-left: 0.7%;
+  }
+</style>

@@ -1,0 +1,287 @@
+---
+import { checkDigit } from '../lib/ean';
+import { useT, type Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+
+const t = useT(Astro.props.lang).inventory;
+
+// Todos los nombres, IDs y existencias de esta demo son inventados.
+const items = t.items.map((name, i) => {
+  const base = `77012345670${i + 1}`;
+  return {
+    name,
+    a: ['BT-10482', 'BT-20917', 'BT-33560'][i],
+    b: ['CM-77310', 'CM-41862', 'CM-90244'][i],
+    ean: base + checkDigit(base),
+    stock: [
+      [3, 0, 5, 2],
+      [0, 4, 1, 0],
+      [2, 2, 0, 6],
+    ][i],
+  };
+});
+const orderB = [2, 0, 1];
+const places = ['Cali', 'Bogotá', 'Medellín', 'Online'];
+---
+
+<section class="band inv" id="inventario">
+  <div class="wrap">
+    <h2 class="band-title">{t.title}</h2>
+    <div class="grid">
+      <div class="copy">
+        <p class="big">{t.big}</p>
+        <p>{t.body}</p>
+        <dl class="facts">
+          {
+            t.facts.map(([dt, dd]) => (
+              <div>
+                <dt>{dt}</dt>
+                <dd>{dd}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+      <div
+        class="paper demo on-paper"
+        id="invDemo"
+        data-items={JSON.stringify(items)}
+        data-units={t.unitsWord}
+        data-places={t.placesWord}
+      >
+        <div class="scanline" aria-hidden="true"></div>
+        <div class="demo-top">
+          <strong>{t.demoTitle}</strong>
+          <span class="tag">{t.madeUp}</span>
+        </div>
+        <div class="cat">
+          <div>
+            <h3>{t.companyA}</h3>
+            <div class="rows">
+              {
+                items.map((it, i) => (
+                  <div class:list={['row', { hit: i === 0 }]} data-i={i}>
+                    <b>{it.a}</b>
+                    <span>{it.name}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+          <span class="link" aria-hidden="true">EAN</span>
+          <div>
+            <h3>{t.companyB}</h3>
+            <div class="rows">
+              {
+                orderB.map((i) => (
+                  <div class:list={['row', { hit: i === 0 }]} data-i={i}>
+                    <b>{items[i].b}</b>
+                    <span>{items[i].name.toUpperCase()}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+        <div class="ean"><span data-ean>EAN {items[0].ean}</span><span>{t.checkDigit}</span></div>
+        <ul class="stock" aria-live="polite">
+          {
+            places.map((p, k) => (
+              <li class:list={{ zero: items[0].stock[k] === 0 }}>
+                <b data-n>{items[0].stock[k]}</b>
+                <span>{p}</span>
+                <i>
+                  <em style={`--v:${items[0].stock[k] / 5}`} />
+                </i>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="total" data-total>{`10 ${t.unitsWord} 3 ${t.placesWord}`}</p>
+        <button class="btn" type="button" data-scan>{t.scan}</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  type Item = { name: string; ean: string; stock: number[] };
+  const demo = document.getElementById('invDemo')!;
+  const items: Item[] = JSON.parse(demo.dataset.items!);
+  const line = demo.querySelector<HTMLElement>('.scanline')!;
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let current = 0;
+  let scanning = false;
+
+  function show(i: number) {
+    const it = items[i];
+    demo.querySelectorAll<HTMLElement>('.row').forEach((r) => r.classList.toggle('hit', Number(r.dataset.i) === i));
+    demo.querySelector('[data-ean]')!.textContent = `EAN ${it.ean}`;
+    const max = Math.max(...it.stock, 1);
+    demo.querySelectorAll('.stock li').forEach((li, k) => {
+      li.classList.toggle('zero', it.stock[k] === 0);
+      li.querySelector('[data-n]')!.textContent = String(it.stock[k]);
+      li.querySelector<HTMLElement>('em')!.style.setProperty('--v', String(it.stock[k] / max));
+    });
+    const sum = it.stock.reduce((a, b) => a + b, 0);
+    const open = it.stock.filter(Boolean).length;
+    demo.querySelector('[data-total]')!.textContent = `${sum} ${demo.dataset.units} ${open} ${demo.dataset.places}`;
+  }
+
+  function scan() {
+    if (scanning) return;
+    const next = (current + 1) % items.length;
+    if (calm) {
+      current = next;
+      return show(current);
+    }
+    scanning = true;
+    line.animate(
+      [
+        { transform: 'translateY(0)', opacity: 1 },
+        { transform: `translateY(${demo.offsetHeight}px)`, opacity: 1 },
+      ],
+      { duration: 460, easing: 'cubic-bezier(0.77, 0, 0.175, 1)' },
+    ).onfinish = () => (scanning = false);
+    setTimeout(() => {
+      current = next;
+      show(current);
+    }, 230);
+  }
+
+  show(0);
+  demo.querySelector('[data-scan]')!.addEventListener('click', scan);
+</script>
+
+<style>
+  .inv {
+    --bg: var(--bInv);
+    --prev: var(--bHero);
+    --h: var(--hInv);
+  }
+  .demo {
+    padding: clamp(14px, 2vw, 24px);
+  }
+  .demo-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .demo-top strong {
+    font: 800 1.05rem/1 var(--display);
+    font-variation-settings: 'wdth' 115;
+  }
+  .cat {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr);
+    margin-top: 16px;
+    align-items: start;
+  }
+  .cat h3 {
+    font: 700 0.92rem/1.2 var(--body);
+    margin-bottom: 8px;
+  }
+  .rows {
+    display: grid;
+    gap: 6px;
+  }
+  .row {
+    background: #eeeee4;
+    border-radius: 4px;
+    padding: 8px 10px;
+    min-width: 0;
+    transition: background-color 180ms ease, color 180ms ease;
+  }
+  .row b {
+    display: block;
+    font: 600 0.72rem/1.3 var(--code);
+    overflow-wrap: anywhere;
+  }
+  .row span {
+    display: block;
+    font-size: 0.86rem;
+    line-height: 1.25;
+  }
+  .row.hit {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .link {
+    align-self: center;
+    justify-self: center;
+    font: 600 0.66rem/1 var(--code);
+    color: #c4001f;
+    border: 2px solid #c4001f;
+    border-radius: 999px;
+    padding: 6px 7px;
+  }
+  .ean {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    font: 400 0.76rem/1.4 var(--code);
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 2px dashed #c9c9d6;
+  }
+  .stock {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .stock li {
+    min-width: 0;
+  }
+  .stock b {
+    display: block;
+    font: 850 clamp(2rem, 4.4vw, 3.6rem) / 1 var(--display);
+    font-variant-numeric: tabular-nums;
+  }
+  .stock li.zero b {
+    color: #6d7090;
+  }
+  .stock span {
+    font-size: 0.86rem;
+  }
+  .stock i {
+    display: block;
+    height: 6px;
+    background: #e3e3d8;
+    margin-top: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .stock em {
+    display: block;
+    height: 100%;
+    background: var(--ink);
+    transform: scaleX(var(--v, 0));
+    transform-origin: left;
+    transition: transform 420ms var(--out);
+  }
+  .total {
+    margin-top: 12px;
+    font-weight: 700;
+  }
+  .demo .btn {
+    margin-top: 14px;
+  }
+  .scanline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: var(--laser);
+    box-shadow: 0 0 12px 2px rgba(228, 0, 43, 0.55);
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>

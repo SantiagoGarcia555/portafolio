@@ -1,0 +1,206 @@
+---
+import { useT, type Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+
+const t = useT(Astro.props.lang).orders;
+---
+
+<section class="band orders" id="ordenes">
+  <div class="wrap">
+    <h2 class="band-title">{t.title}</h2>
+    <div class="grid">
+      <div class="copy">
+        <p class="big">{t.big}</p>
+        <p>{t.body}</p>
+      </div>
+      <div class="demo" id="belt" data-cut={t.cut} data-restore={t.restore}>
+        <div class="track paper up" role="img" aria-label={t.aria}>
+          <span class="lbl l">VTEX</span>
+          <span class="lbl r">SIESA</span>
+          <div class="belt left"></div>
+          <div class="belt right"></div>
+          <div class="cutmark"></div>
+          <div class="moving" aria-hidden="true">
+            {Array.from({ length: 5 }, (_, i) => <div class="parcel" style={`--delay:${-i * 1.2}s`} />)}
+          </div>
+          <div class="half parcel" aria-hidden="true"></div>
+          <div class="stack" aria-hidden="true"></div>
+        </div>
+        <div class="controls">
+          <button class="btn" type="button" data-cut-btn>{t.cut}</button>
+          <div class="counts" aria-live="off">
+            <span>{t.delivered} <b data-sent>128</b></span>
+            <span>{t.waiting} <b data-waiting>0</b></span>
+          </div>
+        </div>
+        <p class="note">{t.note}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.getElementById('belt')!;
+  const track = root.querySelector<HTMLElement>('.track')!;
+  const stack = root.querySelector<HTMLElement>('.stack')!;
+  const btn = root.querySelector<HTMLButtonElement>('[data-cut-btn]')!;
+  const sentEl = root.querySelector('[data-sent]')!;
+  const waitEl = root.querySelector('[data-waiting]')!;
+  let up = true;
+  let sent = 128;
+  let waiting = 0;
+  let visible = false;
+
+  function render() {
+    track.classList.toggle('up', up);
+    track.classList.toggle('down', !up);
+    btn.textContent = up ? root.dataset.cut! : root.dataset.restore!;
+    sentEl.textContent = String(sent);
+    waitEl.textContent = String(waiting);
+    stack.replaceChildren(
+      ...Array.from({ length: waiting }, (_, k) => {
+        const p = document.createElement('div');
+        p.className = 'parcel';
+        p.style.left = `${56 - (k % 6) * 3.4}%`;
+        p.style.setProperty('--lift', `${Math.floor(k / 6) * 20}px`);
+        return p;
+      }),
+    );
+  }
+
+  btn.addEventListener('click', () => {
+    if (up) up = false;
+    else {
+      up = true;
+      sent += waiting;
+      waiting = 0;
+    }
+    render();
+  });
+
+  new IntersectionObserver(([entry]) => (visible = entry.isIntersecting)).observe(track);
+  setInterval(() => {
+    if (!visible) return;
+    if (up) sent++;
+    else waiting = Math.min(waiting + 1, 12);
+    render();
+  }, 1400);
+  render();
+</script>
+
+<style>
+  .orders {
+    --bg: var(--bOrders);
+    --prev: var(--bInv);
+    --h: var(--hOrders);
+  }
+  .demo {
+    min-width: 0;
+  }
+  .track {
+    height: clamp(200px, 22vw, 280px);
+  }
+  .lbl {
+    position: absolute;
+    top: 16px;
+    font: 600 12px var(--code);
+  }
+  .l {
+    left: 16px;
+  }
+  .r {
+    right: 16px;
+  }
+  .belt {
+    position: absolute;
+    bottom: 32%;
+    height: 3px;
+    background: var(--ink);
+  }
+  .belt.left {
+    left: 0;
+    right: 0;
+  }
+  .belt.right {
+    display: none;
+  }
+  .down .belt.left {
+    right: 40%;
+  }
+  .down .belt.right {
+    display: block;
+    left: 64%;
+    right: 0;
+  }
+  .cutmark {
+    display: none;
+    position: absolute;
+    left: 62%;
+    top: 42px;
+    bottom: 14px;
+    border-left: 2px dashed var(--laser);
+  }
+  .down .cutmark {
+    display: block;
+  }
+  .track :global(.parcel) {
+    position: absolute;
+    bottom: calc(32% + 3px + var(--lift, 0px));
+    width: 26px;
+    height: 17px;
+    background-color: var(--ink);
+    background-image: linear-gradient(90deg, transparent 4px, #16e0a1 4px 5px, transparent 5px 9px, #16e0a1 9px 11px, transparent 11px 15px, #16e0a1 15px 16px, transparent 16px 20px, #16e0a1 20px 22px, transparent 22px);
+    background-size: 100% 70%;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .moving .parcel {
+    animation: run 6s linear var(--delay) infinite;
+  }
+  .down .moving {
+    display: none;
+  }
+  .half {
+    display: none;
+  }
+  .down .half {
+    display: block;
+    animation: half 2.8s linear infinite;
+  }
+  @keyframes run {
+    from {
+      left: -30px;
+    }
+    to {
+      left: 100%;
+    }
+  }
+  @keyframes half {
+    0% {
+      left: -30px;
+      opacity: 1;
+    }
+    85% {
+      left: 58%;
+      opacity: 1;
+    }
+    100% {
+      left: 58%;
+      opacity: 0;
+    }
+  }
+  .counts {
+    display: flex;
+    gap: 22px;
+    margin-left: auto;
+    font: 600 0.8rem/1.3 var(--code);
+    font-variant-numeric: tabular-nums;
+  }
+  .note {
+    margin-top: 10px;
+    font-size: 0.92rem;
+  }
+</style>

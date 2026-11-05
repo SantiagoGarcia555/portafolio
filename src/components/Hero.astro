@@ -1,0 +1,120 @@
+---
+import Barcode from './Barcode.astro';
+import { contactLinks, useT, type Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useT(lang);
+---
+
+<section class="hero">
+  <div class="wrap">
+    <Barcode id="heroCode">
+      <h1 aria-label="Santiago García">
+        <span class="half a" aria-hidden="true">Santiago</span>
+        <span class="half b" aria-hidden="true">García</span>
+      </h1>
+    </Barcode>
+    <div class="intro">
+      <p class="lead">{t.hero.lead}</p>
+      <div class="side">
+        <p>{t.hero.side}</p>
+        <div class="actions">
+          <button class="btn" type="button" data-play="heroCode" data-playing={t.hero.playing}>{t.hero.play}</button>
+          <a class="btn quiet" href={contactLinks.cv[lang]} download>{t.hero.cv}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Ajusta el ancho variable de cada mitad del nombre a su mitad del código de barras.
+  const halves = [...document.querySelectorAll<HTMLElement>('.hero .half')];
+  const code = document.getElementById('heroCode')!;
+  function fit() {
+    const room = code.clientWidth * 0.424;
+    for (const h of halves) {
+      let lo = 50;
+      let hi = 150;
+      for (let k = 0; k < 9; k++) {
+        const mid = (lo + hi) / 2;
+        h.style.fontVariationSettings = `"wdth" ${mid}`;
+        if (h.getBoundingClientRect().width > room) hi = mid;
+        else lo = mid;
+      }
+      h.style.fontVariationSettings = `"wdth" ${lo}`;
+    }
+  }
+  fit();
+  document.fonts?.ready.then(fit);
+  addEventListener('resize', fit);
+</script>
+
+<style>
+  .hero {
+    background: var(--bHero);
+    padding-block: clamp(28px, 4vw, 56px) clamp(40px, 6vw, 72px);
+    transition: background-color 0.4s ease;
+  }
+  h1 {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: var(--notch);
+    font: 850 10.4cqw/1 var(--display);
+    color: var(--bar);
+    animation: rise 0.9s 0.7s var(--out) both;
+  }
+  .half {
+    position: absolute;
+    bottom: 0.03em;
+    white-space: nowrap;
+    font-variation-settings: 'wdth' 80;
+  }
+  .a {
+    left: 3.9%;
+  }
+  .b {
+    left: 53.5%;
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  .intro {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(24px, 5vw, 80px);
+    padding-top: clamp(28px, 4vw, 52px);
+    align-items: end;
+  }
+  .lead {
+    font: 600 clamp(1.45rem, 2.7vw, 2.5rem) / 1.16 var(--display);
+    font-variation-settings: 'wdth' 96;
+    text-wrap: balance;
+  }
+  .side {
+    display: grid;
+    gap: 14px;
+    justify-items: start;
+    min-width: 0;
+  }
+  .side p {
+    max-width: 42ch;
+  }
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 820px) {
+    .intro {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

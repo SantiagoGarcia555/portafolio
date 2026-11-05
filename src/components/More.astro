@@ -1,0 +1,124 @@
+---
+import { useT, type Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+
+const t = useT(Astro.props.lang).more;
+---
+
+<section class="band more" id="mas-trabajo">
+  <div class="wrap">
+    <h2 class="band-title">{t.title}</h2>
+    <div class="printer">
+      <div class="slot"></div>
+      <div class="roll" id="roll">
+        <div class="receipt">
+          <header><b>Santiago García</b><span>{t.subtitle}</span></header>
+          <ul>
+            {
+              t.items.map((it) => (
+                <li>
+                  <b>{it.name}</b>
+                  <em>{it.tech}</em>
+                  <p>{it.desc}</p>
+                </li>
+              ))
+            }
+          </ul>
+          <footer><span>{t.count}</span><span>{t.items.length}</span></footer>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // El recibo se imprime la primera vez que entra en pantalla.
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const roll = document.getElementById('roll')!;
+    const receipt = roll.querySelector<HTMLElement>('.receipt')!;
+    receipt.style.transform = 'translateY(calc(-100% + 34px))';
+    new IntersectionObserver(
+      ([entry], obs) => {
+        if (!entry.isIntersecting) return;
+        obs.disconnect();
+        receipt.animate([{ transform: 'translateY(calc(-100% + 34px))' }, { transform: 'translateY(0)' }], {
+          duration: 2100,
+          easing: 'steps(34, end)',
+        }).onfinish = () => (receipt.style.transform = '');
+      },
+      { rootMargin: '0px 0px -6% 0px' },
+    ).observe(roll);
+  }
+</script>
+
+<style>
+  .more {
+    --bg: var(--bMore);
+    --prev: var(--bWa);
+    --h: var(--hMore);
+    --fg: var(--moreFg);
+    --btnBg: #ffdf00;
+    --btnFg: #11184f;
+  }
+  .printer {
+    margin-top: clamp(32px, 4vw, 56px);
+    max-width: 640px;
+  }
+  .slot {
+    height: 16px;
+    background: #060a2c;
+    border-radius: 8px;
+    position: relative;
+    z-index: 2;
+    box-shadow: inset 0 3px 5px #000;
+  }
+  .roll {
+    overflow: hidden;
+    margin: -8px 14px 0;
+    padding-bottom: 12px;
+  }
+  .receipt {
+    background: var(--paper);
+    color: var(--ink);
+    padding: 32px clamp(16px, 4vw, 34px) 26px;
+    font: 400 0.8rem/1.6 var(--code);
+  }
+  header {
+    text-align: center;
+    padding-bottom: 14px;
+    border-bottom: 2px dashed var(--ink);
+  }
+  header b {
+    display: block;
+    font-size: 1rem;
+  }
+  li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 14px;
+    padding: 12px 0;
+    border-bottom: 1px dashed #b7b8c8;
+  }
+  li b {
+    font-weight: 600;
+  }
+  li em {
+    font-style: normal;
+    text-align: right;
+  }
+  li p {
+    grid-column: 1 / -1;
+    font: 400 0.95rem/1.35 var(--body);
+    color: var(--muted-paper);
+  }
+  footer {
+    padding-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 600;
+  }
+</style>

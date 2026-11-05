@@ -1,0 +1,79 @@
+---
+import { getCollection } from 'astro:content';
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import Base from '../layouts/Base.astro';
+import { useT, type Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useT(lang).blog;
+const posts = (await getCollection('blog', ({ id, data }) => id.startsWith(`${lang}/`) && !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const fmt = new Intl.DateTimeFormat(lang, { dateStyle: 'long' });
+---
+
+<Base lang={lang} path="blog/" title={t.title} description={t.intro}>
+  <section class="band blog">
+    <div class="wrap">
+      <h1 class="band-title">{t.title}</h1>
+      <p class="intro">{t.intro}</p>
+      {
+        posts.length === 0 ? (
+          <p class="empty">{t.empty}</p>
+        ) : (
+          <ul class="list">
+            {posts.map((post) => (
+              <li>
+                <a href={getRelativeLocaleUrl(lang, `blog/${post.id.split('/').slice(1).join('/')}/`)}>
+                  <span class="title">{post.data.title}</span>
+                  <span class="desc">{post.data.description}</span>
+                  <time datetime={post.data.date.toISOString()}>{fmt.format(post.data.date)}</time>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  .blog {
+    --bg: var(--bWa);
+    --prev: var(--bHero);
+    --h: var(--hWa);
+    min-height: 70vh;
+  }
+  .intro {
+    margin-top: 24px;
+    max-width: 52ch;
+    font: 600 clamp(1.2rem, 2vw, 1.6rem) / 1.25 var(--display);
+  }
+  .empty {
+    margin-top: 48px;
+    font: 400 0.9rem/1.4 var(--code);
+  }
+  .list {
+    margin-top: 48px;
+    border-top: 2px solid var(--fg);
+  }
+  .list a {
+    display: grid;
+    gap: 6px;
+    padding: 22px 0;
+    border-bottom: 2px solid var(--fg);
+    text-decoration: none;
+  }
+  .title {
+    font: 800 clamp(1.4rem, 2.6vw, 2.2rem) / 1.1 var(--display);
+    font-variation-settings: 'wdth' 110;
+  }
+  time {
+    font: 400 0.8rem/1 var(--code);
+  }
+</style>

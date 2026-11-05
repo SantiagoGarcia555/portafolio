@@ -1,0 +1,11 @@
+# Material interno de la empresa: nunca publicar.
+contexto/
+
+node_modules/
+dist/
+.astro/
+cv/build/
+.env
+.env.*
+!.env.example
+.DS_Store

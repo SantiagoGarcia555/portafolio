@@ -1,0 +1,32 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from './Hero.astro';
+import Inventory from './Inventory.astro';
+import Orders from './Orders.astro';
+import WhatsApp from './WhatsApp.astro';
+import More from './More.astro';
+import About from './About.astro';
+import Contact from './Contact.astro';
+import type { Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<Base lang={lang}>
+  <Hero lang={lang} />
+  <Inventory lang={lang} />
+  <Orders lang={lang} />
+  <WhatsApp lang={lang} />
+  <More lang={lang} />
+  <About lang={lang} />
+  <Contact lang={lang} />
+</Base>
+
+<script>
+  import { initBarcodes } from '../scripts/barcode';
+  initBarcodes();
+</script>
